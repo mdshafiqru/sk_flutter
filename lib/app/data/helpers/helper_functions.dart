@@ -30,3 +30,8 @@ logout() async {
     });
   }
 }
+
+isUserLoggedIn() {
+  bool loggedIn = _storage.read(LOGGED_IN) ?? false;
+  return loggedIn;
+}

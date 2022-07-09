@@ -52,6 +52,7 @@ class SignupView extends StatelessWidget {
 
     final emailField = TextFormField(
       style: TextStyle(fontSize: 14),
+      controller: _emailController,
       validator: MultiValidator([
         RequiredValidator(errorText: 'Email is required'),
         EmailValidator(errorText: 'Please enter a valid email'),
@@ -80,8 +81,9 @@ class SignupView extends StatelessWidget {
     final passwordField = Obx(
       () => TextFormField(
         inputFormatters: [LengthLimitingTextInputFormatter(40)],
+        controller: _passwordController,
         validator: MultiValidator([
-          RequiredValidator(errorText: 'Email is required'),
+          RequiredValidator(errorText: 'Password is required'),
           MinLengthValidator(6,
               errorText: 'Password must be at least 6 character long')
         ]),
@@ -201,7 +203,10 @@ class SignupView extends StatelessWidget {
       child: MaterialButton(
         onPressed: () {
           if (_signupFormKey.currentState!.validate()) {
-            Get.find<AuthController>().signUpWithEmailPass();
+            Get.find<AuthController>().signUpWithEmailPass(
+              email: _emailController.text.trim(),
+              password: _passwordController.text.trim(),
+            );
           }
         },
         color: purpleColor,
@@ -210,7 +215,7 @@ class SignupView extends StatelessWidget {
         ),
         padding: EdgeInsets.symmetric(vertical: 14),
         child: Obx(() {
-          return Get.find<AuthController>().creatingAccount.value
+          return Get.find<AuthController>().creatingAccountWithEmailPass.value
               ? Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -265,7 +270,9 @@ class SignupView extends StatelessWidget {
     final singupGoogleButton = SizedBox(
       width: double.infinity,
       child: MaterialButton(
-        onPressed: () {},
+        onPressed: () {
+          Get.find<AuthController>().googleSignIn();
+        },
         shape: RoundedRectangleBorder(
           side: BorderSide(color: borderColor),
           borderRadius: BorderRadius.circular(5),
@@ -328,8 +335,8 @@ class SignupView extends StatelessWidget {
                   SizedBox(height: 4),
                   signupSubtitle,
                   SizedBox(height: 24),
-                  nameField,
-                  SizedBox(height: 16),
+                  // nameField,
+                  // SizedBox(height: 16),
                   emailField,
                   SizedBox(height: 16),
                   passwordField,

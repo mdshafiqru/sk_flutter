@@ -24,42 +24,86 @@ class AuthController extends GetxController {
 
   var checkingForgetPassword = false.obs;
   var signingWithEmailPass = false.obs;
+  var creatingAccountWithEmailPass = false.obs;
 
-  signUpWithEmailPass() async {
-    //
+  signUpWithEmailPass({required String email, required String password}) async {
+    if (!creatingAccountWithEmailPass.value) {
+      creatingAccountWithEmailPass.value = true;
+      try {
+        UserCredential userCredential = await FirebaseAuth.instance
+            .createUserWithEmailAndPassword(email: email, password: password)
+            .catchError((error) {
+          creatingAccountWithEmailPass.value = false;
+          Get.defaultDialog(
+            title: "Sign Up Error",
+            content: Text(error.message),
+            onConfirm: () => Get.back(),
+            confirmTextColor: whiteColor,
+          );
+        });
+
+        if (userCredential.user != null) {
+          CustomUser user = CustomUser(
+            uid: userCredential.user!.uid,
+            name: userCredential.user!.displayName,
+            email: userCredential.user!.email,
+            profileImage: userCredential.user!.photoURL,
+          );
+          _storage.write(LOGGED_IN, true);
+
+          _storage.write(USER_NAME, user.name ?? "");
+          _storage.write(USER_EMAIL, user.email ?? "");
+          _storage.write(PROFILE_IMAGE, user.profileImage ?? "");
+          _storage.write(SIGN_IN_METHOD, SIGN_WITH_EMAIL_PASS);
+          creatingAccountWithEmailPass.value = false;
+          Get.offAll(() => DashboardView());
+        } else {
+          creatingAccountWithEmailPass.value = false;
+        }
+      } catch (e) {
+        creatingAccountWithEmailPass.value = false;
+        e.printError();
+      }
+    }
   }
 
   signInWithEmailPass({required String email, required String password}) async {
     if (!signingWithEmailPass.value) {
       signingWithEmailPass.value = true;
-      UserCredential userCredential = await FirebaseAuth.instance
-          .signInWithEmailAndPassword(email: email, password: password)
-          .catchError((error) {
-        signingWithEmailPass.value = false;
-        Get.defaultDialog(
-          title: "Login Error",
-          content: Text(error.message),
-          onConfirm: () => Get.back(),
-          confirmTextColor: whiteColor,
-        );
-      });
+      try {
+        UserCredential userCredential = await FirebaseAuth.instance
+            .signInWithEmailAndPassword(email: email, password: password)
+            .catchError((error) {
+          signingWithEmailPass.value = false;
+          Get.defaultDialog(
+            title: "Login Error",
+            content: Text(error.message),
+            onConfirm: () => Get.back(),
+            confirmTextColor: whiteColor,
+          );
+        });
 
-      if (userCredential.user != null) {
-        CustomUser user = CustomUser(
-          uid: userCredential.user!.uid,
-          name: userCredential.user!.displayName,
-          email: userCredential.user!.email,
-          profileImage: userCredential.user!.photoURL,
-        );
-        _storage.write(LOGGED_IN, true);
-        _storage.write(USER_NAME, user.name ?? "");
-        _storage.write(USER_EMAIL, user.email ?? "");
-        _storage.write(PROFILE_IMAGE, user.profileImage ?? "");
-        _storage.write(SIGN_IN_METHOD, SIGN_WITH_EMAIL_PASS);
+        if (userCredential.user != null) {
+          CustomUser user = CustomUser(
+            uid: userCredential.user!.uid,
+            name: userCredential.user!.displayName,
+            email: userCredential.user!.email,
+            profileImage: userCredential.user!.photoURL,
+          );
+          _storage.write(LOGGED_IN, true);
+
+          _storage.write(USER_NAME, user.name ?? "");
+          _storage.write(USER_EMAIL, user.email ?? "");
+          _storage.write(PROFILE_IMAGE, user.profileImage ?? "");
+          _storage.write(SIGN_IN_METHOD, SIGN_WITH_EMAIL_PASS);
+          signingWithEmailPass.value = false;
+          Get.offAll(() => DashboardView());
+        } else {
+          signingWithEmailPass.value = false;
+        }
+      } catch (e) {
         signingWithEmailPass.value = false;
-        Get.offAll(() => DashboardView());
-      } else {
-        signingWithEmailPass.value = false;
+        e.printError();
       }
     }
   }

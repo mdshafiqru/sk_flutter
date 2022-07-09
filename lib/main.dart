@@ -7,12 +7,14 @@ import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 
 import 'app/data/constants/app_string.dart';
+import 'app/data/helpers/helper_functions.dart';
 import 'app/views/auth/signin_view.dart';
 import 'app/views/dashboard/dashboard/dashboard_view.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+  await GetStorage.init();
   runApp(const MyApp());
 }
 
@@ -50,7 +52,9 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   void checkLogin() {
-    bool loggedIn = GetStorage().read(LOGGED_IN) ?? false;
+    bool loggedIn = isUserLoggedIn();
+    print(loggedIn);
+
     if (loggedIn) {
       Get.offAll(() => DashboardView());
     } else {
