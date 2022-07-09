@@ -2,11 +2,11 @@
 
 import 'dart:developer';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:form_field_validator/form_field_validator.dart';
 import 'package:get/get.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 
 import '../../controllers/auth/auth_controller.dart';
 import '../../data/constants/color_palatte.dart';
@@ -28,6 +28,7 @@ class SigninView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final emailField = TextFormField(
+      controller: _emailController,
       style: TextStyle(fontSize: 14),
       validator: MultiValidator([
         RequiredValidator(errorText: 'Email is required'),
@@ -57,6 +58,7 @@ class SigninView extends StatelessWidget {
     final passwordField = Obx(
       () => TextFormField(
         inputFormatters: [LengthLimitingTextInputFormatter(40)],
+        controller: _passwordController,
         validator: MultiValidator([
           RequiredValidator(errorText: 'Email is required'),
           MinLengthValidator(6,
@@ -118,7 +120,10 @@ class SigninView extends StatelessWidget {
       child: MaterialButton(
         onPressed: () {
           if (_signinFormKey.currentState!.validate()) {
-            Get.find<AuthController>().signInWithEmailPass();
+            Get.find<AuthController>().signInWithEmailPass(
+              email: _emailController.text.trim(),
+              password: _passwordController.text.trim(),
+            );
           }
         },
         color: purpleColor,
@@ -127,7 +132,7 @@ class SigninView extends StatelessWidget {
         ),
         padding: EdgeInsets.symmetric(vertical: 14),
         child: Obx(() {
-          return Get.find<AuthController>().logingIn.value
+          return Get.find<AuthController>().signingWithEmailPass.value
               ? Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
